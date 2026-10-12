@@ -1,0 +1,1386 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tugas Animasi Multimedia</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Poppins:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  /* ===== RESET & BASE ===== */
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #0f0f1a;
+    color: #fff;
+    overflow-x: hidden;
+    font-family: 'Inter', 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-weight: 400;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* ===== NAVBAR ===== */
+  .navbar {
+    position: fixed; top: 0; left: 0; width: 100%; z-index: 1000;
+    background: rgba(15,15,26,0.95);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 18px 30px;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+  }
+  .brand {
+    font-size: 1rem; font-weight: 700; color: #fff;
+    letter-spacing: 2px; text-transform: uppercase;
+    font-family: 'Poppins', sans-serif;
+  }
+  .brand span { color: #ff3c78; }
+
+  .hamburger {
+    width: 32px; height: 24px; display: flex; flex-direction: column;
+    justify-content: space-between; cursor: pointer; z-index: 1100;
+  }
+  .hamburger span {
+    display: block; height: 3px; width: 100%;
+    background: #fff; border-radius: 3px;
+    transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .hamburger.active span:nth-child(1) { transform: translateY(10.5px) rotate(45deg); background: #ff3c78; }
+  .hamburger.active span:nth-child(2) { opacity: 0; }
+  .hamburger.active span:nth-child(3) { transform: translateY(-10.5px) rotate(-45deg); background: #ff3c78; }
+
+  /* ===== MENU DROPDOWN ===== */
+  .nav-menu {
+    position: fixed; top: 0; right: -340px; width: 320px; height: 100vh;
+    background: #16162a;
+    z-index: 1050; padding: 100px 28px 30px;
+    transition: right 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: -10px 0 40px rgba(0,0,0,0.6);
+  }
+  .nav-menu.open { right: 0; }
+  .nav-menu ul { list-style: none; }
+  .nav-menu ul li { margin-bottom: 10px; }
+  .nav-menu ul li a {
+    display: block; padding: 14px 20px; color: #cfcfdb;
+    text-decoration: none; background: rgba(255,255,255,0.03);
+    border-radius: 10px;
+    font-weight: 500; font-size: 0.92rem;
+    letter-spacing: 0.3px;
+    transition: all 0.3s ease;
+    font-family: 'Inter', sans-serif;
+  }
+  .nav-menu ul li a:hover {
+    background: rgba(255,60,120,0.12);
+    color: #fff;
+    transform: translateX(-4px);
+  }
+  .nav-menu ul li a.active {
+    background: #ff3c78;
+    color: #fff;
+    font-weight: 600;
+  }
+  .overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.7);
+    opacity: 0; visibility: hidden;
+    transition: 0.4s; z-index: 1040;
+    backdrop-filter: blur(3px);
+  }
+  .overlay.show { opacity: 1; visibility: visible; }
+
+  /* ===== KONTEN UTAMA ===== */
+  main { padding-top: 80px; }
+  .section { display: none; padding: 40px 30px 80px; animation: fadeIn 0.6s ease; max-width: 1400px; margin: 0 auto; }
+  .section.active { display: block; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+  /* Kotak-kotak umum (polos) */
+  .box {
+    background: #16162a;
+    border-radius: 18px;
+    padding: 28px;
+    margin-bottom: 28px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+  }
+
+  /* ===== BERANDA ===== */
+  .hero-title {
+    font-family: 'Poppins', sans-serif;
+    font-size: clamp(2rem, 6vw, 3.8rem);
+    text-align: center;
+    font-weight: 800;
+    letter-spacing: -1px;
+    line-height: 1.15;
+    margin: 20px 0 12px;
+    background: linear-gradient(135deg, #ff3c78 0%, #ffb86c 50%, #4facfe 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .hero-sub {
+    text-align: center;
+    color: #8a8aa0;
+    margin-bottom: 35px;
+    font-size: 1rem;
+    font-weight: 400;
+    letter-spacing: 0.5px;
+  }
+
+  /* ===== GRID ===== */
+  .grid-2 { display: grid; grid-template-columns: 1fr; gap: 24px; }
+  .grid-3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 22px; }
+  @media (min-width: 768px) { .grid-2 { grid-template-columns: 1fr 1fr; } }
+
+  /* ===== VIDEO — TAMPILAN PENUH LAYAR BESAR (1 KOLOM) ===== */
+  .video-box {
+    position: relative; cursor: pointer;
+    border-radius: 14px; overflow: hidden;
+    background: #000;
+    transition: transform 0.35s ease, box-shadow 0.35s ease;
+    width: 100%;
+  }
+  .video-box:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 15px 40px rgba(0,0,0,0.5);
+  }
+  .video-box video {
+    width: 100%;
+    display: block;
+    pointer-events: none;
+    aspect-ratio: 16 / 9;
+    object-fit: cover;
+  }
+  .video-box .play-icon {
+    position: absolute; top: 50%; left: 50%;
+    transform: translate(-50%,-50%);
+    font-size: 1.6rem; color: #fff;
+    background: rgba(0,0,0,0.55);
+    width: 90px; height: 90px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    pointer-events: none;
+    backdrop-filter: blur(6px);
+    transition: transform 0.3s ease, background 0.3s ease;
+  }
+  .video-box:hover .play-icon {
+    transform: translate(-50%,-50%) scale(1.1);
+    background: rgba(255,60,120,0.85);
+  }
+  .video-label {
+    position: absolute; bottom: 0; left: 0; width: 100%;
+    background: linear-gradient(to top, rgba(0,0,0,0.9), transparent);
+    padding: 40px 24px 20px;
+    text-align: left; font-size: 1rem;
+    font-weight: 600; letter-spacing: 0.4px;
+    font-family: 'Poppins', sans-serif;
+  }
+
+  /* ===== VIDEO ITEM — FULL WIDTH, BERTUMPUK ===== */
+  .video-list {
+    display: flex;
+    flex-direction: column;
+    gap: 40px;
+  }
+  .video-item {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+  }
+  .video-item .video-box { margin-bottom: 0; }
+  .video-item .video-caption {
+    padding: 20px 8px 4px;
+    text-align: left;
+  }
+  .video-item .video-caption h4 {
+    font-family: 'Poppins', sans-serif;
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: #fff;
+    letter-spacing: 0.2px;
+    margin-bottom: 8px;
+  }
+  .video-item .video-caption p {
+    font-size: 0.92rem;
+    color: #8a8aa0;
+    line-height: 1.65;
+    letter-spacing: 0.2px;
+    max-width: 900px;
+  }
+
+  /* ===== IMAGE ITEM ===== */
+  .img-item {
+    display: flex;
+    flex-direction: column;
+  }
+  .img-item .img-small { margin-bottom: 0; }
+  .img-item .img-text {
+    padding: 12px 4px 4px;
+    text-align: left;
+  }
+  .img-item .img-text h4 {
+    font-family: 'Poppins', sans-serif;
+    font-size: 0.92rem;
+    font-weight: 600;
+    color: #fff;
+    letter-spacing: 0.2px;
+    margin-bottom: 4px;
+  }
+  .img-item .img-text p {
+    font-size: 0.82rem;
+    color: #8a8aa0;
+    line-height: 1.55;
+    letter-spacing: 0.2px;
+  }
+
+  /* ===== PARAGRAF ===== */
+  .paragraf {
+    padding: 18px 22px;
+    margin-bottom: 14px;
+    border-radius: 12px;
+    line-height: 1.75;
+    font-size: 0.95rem;
+    background: rgba(255,255,255,0.03);
+    color: #cfcfdb;
+  }
+  .paragraf h3 {
+    color: #fff;
+    margin-bottom: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    letter-spacing: 0.2px;
+    font-family: 'Poppins', sans-serif;
+  }
+
+  /* ===== IMAGE ===== */
+  .img-small {
+    width: 100%; aspect-ratio: 1/1; object-fit: cover;
+    border-radius: 12px; cursor: pointer;
+    transition: transform 0.35s ease, box-shadow 0.35s ease;
+    display: block;
+  }
+  .img-small:hover {
+    transform: scale(1.04);
+    box-shadow: 0 12px 30px rgba(0,0,0,0.5);
+  }
+  .img-landscape {
+    width: 100%; max-width: 1100px; margin: 0 auto;
+    display: block; border-radius: 16px;
+    cursor: pointer;
+    transition: transform 0.4s ease, box-shadow 0.4s ease;
+  }
+  .img-landscape:hover {
+    transform: scale(1.015);
+    box-shadow: 0 15px 40px rgba(0,0,0,0.5);
+  }
+  .hero-img {
+    width: 100%; max-width: 1100px; margin: 0 auto; display: block;
+    border-radius: 16px; cursor: pointer;
+    transition: transform 0.4s ease, box-shadow 0.4s ease;
+  }
+  .hero-img:hover {
+    transform: scale(1.015);
+    box-shadow: 0 15px 40px rgba(0,0,0,0.5);
+  }
+
+  /* ===== KETERANGAN TEXT ===== */
+  .caption {
+    text-align: center;
+    color: #8a8aa0;
+    font-size: 0.88rem;
+    font-weight: 400;
+    margin-top: 14px;
+    letter-spacing: 0.3px;
+    line-height: 1.6;
+  }
+  .caption strong { color: #fff; font-weight: 600; }
+
+  /* ===== LOGO BULAT ===== */
+  .logo-bulat {
+    width: 130px; height: 130px; border-radius: 50%;
+    object-fit: cover; cursor: pointer;
+    transition: transform 0.4s ease, box-shadow 0.4s ease;
+    display: block; margin: 0 auto 18px;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.4);
+  }
+  .logo-bulat:hover {
+    transform: scale(1.08);
+    box-shadow: 0 15px 40px rgba(255,60,120,0.35);
+  }
+
+  /* ===== PEMBUATAN TUGAS (1 ORANG) ===== */
+  .pembuat-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 30px 20px;
+  }
+  .pembuat-foto {
+    width: 160px; height: 160px; border-radius: 50%;
+    object-fit: cover; cursor: pointer;
+    box-shadow: 0 10px 35px rgba(0,0,0,0.5);
+    transition: transform 0.4s ease, box-shadow 0.4s ease;
+    margin-bottom: 22px;
+  }
+  .pembuat-foto:hover {
+    transform: scale(1.06);
+    box-shadow: 0 15px 45px rgba(255,60,120,0.4);
+  }
+  .pembuat-nama {
+    font-family: 'Poppins', sans-serif;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #fff;
+    letter-spacing: 0.5px;
+    margin-bottom: 6px;
+  }
+  .pembuat-jabatan {
+    color: #ff3c78;
+    font-size: 0.9rem;
+    font-weight: 500;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 18px;
+  }
+  .pembuat-desc {
+    color: #8a8aa0;
+    font-size: 0.92rem;
+    max-width: 520px;
+    line-height: 1.75;
+  }
+
+  /* ===== LIGHTBOX ===== */
+  .lightbox {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.96);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 2000; opacity: 0; visibility: hidden; transition: 0.4s;
+  }
+  .lightbox.show { opacity: 1; visibility: visible; }
+  .lightbox img {
+    max-width: 95vw; max-height: 90vh; border-radius: 12px;
+    transform: scale(0.2); opacity: 0;
+    transition: transform 0.5s cubic-bezier(0.34,1.56,0.64,1), opacity 0.4s;
+    box-shadow: 0 25px 80px rgba(0,0,0,0.8);
+  }
+  .lightbox.show img { transform: scale(1); opacity: 1; }
+  .lightbox .close-btn {
+    position: absolute; top: 22px; right: 28px;
+    font-size: 1.6rem; color: #fff; cursor: pointer;
+    z-index: 2100; line-height: 1;
+    background: rgba(255,255,255,0.1);
+    width: 46px; height: 46px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    transition: 0.3s; backdrop-filter: blur(6px);
+  }
+  .lightbox .close-btn:hover { background: #ff3c78; transform: rotate(90deg); }
+
+  .lightbox-video {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.96);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 2000; opacity: 0; visibility: hidden; transition: 0.4s;
+  }
+  .lightbox-video.show { opacity: 1; visibility: visible; }
+  .lightbox-video video {
+    width: 95vw;
+    max-width: 1600px;
+    max-height: 88vh;
+    height: auto;
+    border-radius: 12px;
+    transform: scale(0.2); opacity: 0;
+    transition: transform 0.5s cubic-bezier(0.34,1.56,0.64,1), opacity 0.4s;
+    box-shadow: 0 25px 80px rgba(0,0,0,0.8);
+    background: #000;
+  }
+  .lightbox-video.show video { transform: scale(1); opacity: 1; }
+  .lightbox-video .close-btn {
+    position: absolute; top: 22px; right: 28px;
+    font-size: 1.6rem; color: #fff; cursor: pointer;
+    z-index: 2100; line-height: 1;
+    background: rgba(255,255,255,0.1);
+    width: 46px; height: 46px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    transition: 0.3s; backdrop-filter: blur(6px);
+  }
+  .lightbox-video .close-btn:hover { background: #4facfe; transform: rotate(90deg); }
+
+  /* ===== JUDUL SECTION ===== */
+  .section-title {
+    font-family: 'Poppins', sans-serif;
+    font-size: 1.7rem;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 10px;
+    letter-spacing: -0.5px;
+  }
+  .section-desc {
+    color: #8a8aa0;
+    font-size: 0.92rem;
+    margin-bottom: 28px;
+    line-height: 1.6;
+    max-width: 720px;
+  }
+
+  /* ===== DIVIDER ===== */
+  .divider {
+    height: 1px;
+    background: rgba(255,255,255,0.06);
+    margin: 50px 0 40px;
+    border: none;
+  }
+
+  /* ===== SUB JUDUL ===== */
+  .sub-title {
+    font-family: 'Poppins', sans-serif;
+    font-size: 1.15rem;
+    font-weight: 600;
+    color: #fff;
+    margin-bottom: 18px;
+    letter-spacing: 0.2px;
+  }
+
+  footer {
+    text-align: center;
+    padding: 30px;
+    color: #4a4a5e;
+    font-size: 0.82rem;
+    border-top: 1px solid rgba(255,255,255,0.05);
+    letter-spacing: 0.4px;
+    margin-top: 40px;
+  }
+
+  /* ===== RESPONSIVE ===== */
+  @media (max-width: 640px) {
+    .navbar { padding: 14px 20px; }
+    .section { padding: 30px 16px 60px; }
+    .box { padding: 18px; border-radius: 14px; }
+    .video-box .play-icon { width: 70px; height: 70px; font-size: 1.3rem; }
+    .video-label { font-size: 0.9rem; padding: 30px 16px 14px; }
+    .video-item .video-caption h4 { font-size: 1rem; }
+    .video-item .video-caption p { font-size: 0.85rem; }
+    .section-title { font-size: 1.35rem; }
+  }
+
+  /* ===== MEDIA SWITCH (IMG <-> VIDEO) ===== */
+  .media-switch {
+    position: relative;
+    width: 100%;
+    border-radius: 14px;
+    overflow: hidden;
+    background: #000;
+    cursor: pointer;
+  }
+  .media-switch img {
+    width: 100%;
+    display: block;
+    aspect-ratio: 16 / 9;
+    object-fit: cover;
+    transition: transform 0.4s ease;
+  }
+  .media-switch:hover img { transform: scale(1.03); }
+  .media-switch video {
+    width: 100%;
+    display: none;
+    aspect-ratio: 16 / 9;
+    object-fit: cover;
+    background: #000;
+    pointer-events: auto;
+  }
+  .media-switch.active img { display: none; }
+  .media-switch.active video { display: block; }
+  .media-switch .play-icon {
+    position: absolute; top: 50%; left: 50%;
+    transform: translate(-50%,-50%);
+    font-size: 1.6rem; color: #fff;
+    background: rgba(0,0,0,0.55);
+    width: 90px; height: 90px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    pointer-events: none;
+    backdrop-filter: blur(6px);
+    transition: transform 0.3s ease, background 0.3s ease, opacity 0.3s ease;
+  }
+  .media-switch:hover .play-icon {
+    transform: translate(-50%,-50%) scale(1.1);
+    background: rgba(255,60,120,0.85);
+  }
+  .media-switch.active .play-icon { opacity: 0; }
+  .media-switch .video-label {
+    position: absolute; bottom: 0; left: 0; width: 100%;
+    background: linear-gradient(to top, rgba(0,0,0,0.9), transparent);
+    padding: 40px 24px 20px;
+    text-align: left; font-size: 1rem;
+    font-weight: 600; letter-spacing: 0.4px;
+    font-family: 'Poppins', sans-serif;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+  }
+  .media-switch.active .video-label { opacity: 0; }
+  @media (max-width: 640px) {
+    .media-switch .play-icon { width: 70px; height: 70px; font-size: 1.3rem; }
+    .media-switch .video-label { font-size: 0.9rem; padding: 30px 16px 14px; }
+  }
+
+  /* ===== VIDEO-THUMB: THUMBNAIL GAMBAR → KLIK → VIDEO ===== */
+  .video-thumb {
+    position: relative;
+    width: 100%;
+    border-radius: 14px;
+    overflow: hidden;
+    background: #000;
+    transition: transform 0.35s ease, box-shadow 0.35s ease;
+  }
+  .video-thumb:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 15px 40px rgba(0,0,0,0.5);
+  }
+  .video-thumb img {
+    width: 100%;
+    display: block;
+    aspect-ratio: 16 / 9;
+    object-fit: cover;
+    transition: transform 0.4s ease, opacity 0.3s ease;
+    cursor: pointer;
+  }
+  .video-thumb:hover img { transform: scale(1.03); }
+  .video-thumb video {
+    width: 100%;
+    display: none;
+    aspect-ratio: 16 / 9;
+    object-fit: cover;
+    background: #000;
+  }
+  .video-thumb.active img { display: none; }
+  .video-thumb.active video { display: block; }
+  .video-thumb .play-icon {
+    position: absolute; top: 50%; left: 50%;
+    transform: translate(-50%,-50%);
+    font-size: 1.6rem; color: #fff;
+    background: rgba(0,0,0,0.55);
+    width: 90px; height: 90px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    backdrop-filter: blur(6px);
+    transition: transform 0.3s ease, background 0.3s ease, opacity 0.3s ease;
+    z-index: 5;
+  }
+  .video-thumb:hover .play-icon {
+    transform: translate(-50%,-50%) scale(1.15);
+    background: rgba(255,60,120,0.9);
+  }
+  .video-thumb .play-icon:hover {
+    background: rgba(255,60,120,1);
+    box-shadow: 0 0 30px rgba(255,60,120,0.7);
+  }
+  .video-thumb.active .play-icon { opacity: 0; pointer-events: none; }
+  .video-thumb .video-label {
+    position: absolute; bottom: 0; left: 0; width: 100%;
+    background: linear-gradient(to top, rgba(0,0,0,0.9), transparent);
+    padding: 40px 24px 20px;
+    text-align: left; font-size: 1rem;
+    font-weight: 600; letter-spacing: 0.4px;
+    font-family: 'Poppins', sans-serif;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+  }
+  .video-thumb.active .video-label { opacity: 0; }
+  @media (max-width: 640px) {
+    .video-thumb .play-icon { width: 70px; height: 70px; font-size: 1.3rem; }
+    .video-thumb .video-label { font-size: 0.9rem; padding: 30px 16px 14px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ===== NAVBAR ===== -->
+<nav class="navbar">
+  <div class="brand">TUGAS <span>ANIMASI</span></div>
+  <div class="hamburger" id="hamburger">
+    <span></span><span></span><span></span>
+  </div>
+</nav>
+
+<!-- ===== MENU ===== -->
+<div class="overlay" id="overlay"></div>
+<aside class="nav-menu" id="navMenu">
+  <ul>
+    <li><a href="#" data-target="beranda" class="active">Beranda</a></li>
+    <li><a href="#" data-target="hasil1">Hasil 1 · Video Akhir</a></li>
+    <li><a href="#" data-target="taxy">Text to Prompt</a></li>
+    <li><a href="#" data-target="promtimg">Prompt to Image</a></li>
+    <li><a href="#" data-target="imgvideo">Image to Video</a></li>
+    <li><a href="#" data-target="pembuatan">Pembuatan Tugas</a></li>
+  </ul>
+</aside>
+
+<main>
+
+  <!-- ===== BERANDA ===== -->
+  <section class="section active" id="beranda">
+
+    <h1 class="hero-title">Tugas Animasi Multimedia</h1>
+    <p class="hero-sub">Karya Kreatif · Video · Gambar · Prompt AI</p>
+
+    <div class="box">
+      <img src="beranda.png" alt="Latar Beranda" class="hero-img img-zoom"
+           data-src="beranda.png">
+      <p class="caption"><strong>Latar Beranda</strong> — Klik gambar untuk memperbesar tampilan</p>
+    </div>
+
+    <hr class="divider">
+
+    <!-- HASIL 1 -->
+    <h2 class="section-title">Hasil 1 · Video Akhir</h2>
+    <p class="section-desc">Video final hasil produksi animasi multimedia dalam format MP4. Klik ikon ▶ untuk menonton layar penuh.</p>
+    <div class="box">
+      <div class="video-thumb" data-video="hasil.mp4">
+        <img src="foto1.jpg" alt="Thumbnail Video Akhir">
+        <div class="play-icon" title="Tonton layar penuh">▶</div>
+        <div class="video-label">Video Akhir · MP4</div>
+        <video controls preload="metadata" playsinline>
+          <source src="hasil.mp4" type="video/mp4">
+        </video>
+      </div>
+      <p class="caption">Klik gambar untuk memutar di tempat, atau klik <strong>ikon ▶</strong> untuk menonton layar penuh</p>
+    </div>
+
+    <hr class="divider">
+
+    <!-- TAXY TO PROMT -->
+    <h2 class="section-title">Text to Prompt</h2>
+    <p class="section-desc">Kumpulan paragraf penjelasan mengenai proses mengubah teks menjadi prompt untuk AI generatif.</p>
+    <div class="box">
+      <div class="paragraf">
+        <h3>Skenario 1</h3>
+        <p>Di dalam kamar kos yang sempit, jam dinding menunjukkan pukul 07.50. Erut masih tertidur lelap di atas kasur dengan selimut yang berantakan. Tiba-tiba alarm HP berbunyi sangat keras, membuat Sticko melompat kaget dengan mata membelalak dan rambut acak-acakan. Ia melihat jam dan langsung panik karena sadar sebentar lagi ada kuis. VO: "Duh… jam berapa nih? ASTAGA! Jam 8 ada kuis Pak Robi!" Efek suara alarm keras dan "Boing!" mengiringi keterkejutannya.</p>
+      </div>
+      <div class="paragraf">
+        <h3>Skenario 2</h3>
+        <p>Erut segera menyambar tas dan berlari keluar dari kamar kos. Ia melesat di jalanan kota menuju Kampus UPI YPTK dengan kaki yang berputar cepat seperti kartun klasik. Gapura kampus terlihat di kejauhan, sementara Sticko terus berlari sambil membayangkan wajah galak Pak Robi. VO: "Lariii! Gerbang UPI YPTK jam 8 ditutup! Pak Rian galak parah!" Efek suara langkah kaki "pitter-patter" dan angin "whoosh" menemani adegan ini.</p>
+      </div>
+      <div class="paragraf">
+        <h3>Skenario 2</h3>
+        <p>Sampai di koridor Gedung Kuliah UPI YPTK, Erut berlari kencang tanpa memperhatikan sekitar. Ia hampir tergelincir di tikungan, tetapi berhasil menyeimbangkan diri. Tanpa ragu, ia mendorong pintu kelas dengan gaya percaya diri seperti pahlawan yang datang tepat waktu. VO: "Masih ada waktu! Pintu kelas belum dikunci!" Pintu terbanting dengan suara "BAM!" dan napas Sticko terdengar terengah-engah.</p>
+      </div>
+      <div class="paragraf">
+        <h3>skenario 4</h3>
+        <p>Erut berdiri gagah di depan kelas sambil tersenyum lebar, merasa telah berhasil menyelamatkan nilai kuisnya. Namun, kamera perlahan melebar dan memperlihatkan papan tulis yang penuh dengan rumus Fisika Kuantum yang rumit, serta seorang dosen asing berjas yang menatapnya heran. Erut: "Pagi Pak! Maaf agak telat, saya siap ikut kuis!" Suasana langsung hening, hanya terdengar suara jangkrik "rik-rik" yang memperkuat keanehan situasi.</p>
+      </div>
+      <div class="paragraf">
+        <h3>Skenario 5</h3>
+        <p>Seluruh isi kelas, mulai dari dosen hingga belasan mahasiswa , menatap Erut dengan bingung. Beberapa detik kemudian, mereka semua meledak dalam tawa terbahak-bahak. Dosen menggeleng-geleng kepala sambil tersenyum geli. Dosen: "Mas… ini kelas Fisika Kuantum Semester 6. Kamu kan anak Teknik Informatika?" Tawa riuh memenuhi ruangan dengan efek crowd laughter yang kencang.
+
+</p>
+      </div>
+      <div class="paragraf">
+        <h3>Skenario 6</h3>
+        <p>Wajah Erut langsung memerah karena malu. Ia berbalik perlahan, lalu kabur melesat keluar kelas meninggalkan jejak asap kartun di belakangnya. Ia berlari sekuat tenaga menjauh dari kelas yang salah, sambil menutupi wajahnya dengan kedua tangan. VO: "SALAH KELASSS!! ALAMAAK!!" Efek suara komedi "Crickets" dan "Zip-Whoosh!" menutup adegan ini dengan kesan lucu dan absurd.</p>
+      </div>
+    </div>
+
+    <hr class="divider">
+
+    <!-- PROMT TO IMAGE -->
+    <h2 class="section-title">Prompt to Image</h2>
+    <p class="section-desc">Skenario Erut UPI YPTK
+Menyusun skenario, breakdown scene, dan 
+prompt visual yang konsisten. Terdapat 6 scene dengan karakter sticman 2 dimensi 
+
+Scene 1.
+Kamar tidur. Jam beker di 
+meja menunjukkan pukul 
+07.50. Erut tertidur lelap, 
+tiba-tiba jam berdering 
+kencang. Sticko melompat 
+kaget dengan mata 
+membelalak. 
+VO: "Duh... 
+jam berapa 
+nih? SHIT! 
+Jam 8 ada 
+kuis!" 
+Alarm keras 
+kencang, efek 
+kaget 'Boing!' / 
+'Swoosh' 
+Scene 2.
+Erut panik, menyambar 
+ransel, berlari sangat cepat 
+di jalanan kota menuju 
+gerbang kampus, kaki 
+berputar cepat seperti 
+kartun classic. 
+VO: "Lariii! 
+Pak Budi kalau 
+ngunci pintu 
+nggak pakai 
+ampun!" 
+Langkah kaki 
+cepat 'pitterpatter', efek 
+suara angin 
+bertiup kencang 
+Scene 3.
+Koridor kampus. Erut
+berlari kencang, hampir 
+tergelincir di tikungan, lalu 
+mendorong pintu kelas 
+dengan gaya 
+pahlawan/percaya diri. 
+VO: "Masih 
+ada waktu! 
+Pintu kelas 
+belum 
+dikunci!" 
+Pintu terbanting 
+'BAM!', napas 
+terengah-engah 
+Scene 4.
+Erut berdiri gagah di Sticko: "Pagi Suara hening . 
+depan kelas sambil 
+tersenyum lebar. Namun, 
+pandangan kamera meluas: 
+papan tulis berisi rumus 
+Kalkulus rumit & dosen 
+asing. 
+Pak! Maaf 
+agak telat, 
+saya siap 
+ngikutin kuis!" 
+tiba-tiba (record 
+scratch), 
+jangkrik 'rik-rik' 
+Scene 5.
+Seluruh isi kelas (dosen & 
+belasan mahasiswa ) menatap bingung, lalu 
+meledak dalam tawa 
+terbahak-bahak. 
+Dosen: 
+"Mas... ini 
+Kelas Kalkulus 
+Lanjut 
+Semester 6. 
+Kamu kan 
+anak Teknik Informatika!" 
+Tawa riuh 
+penonton/kelas 
+(crowd laughter 
+effect) 
+Scene 6.
+Wajah terstruktur
+memerah/malu. Ia berbalik 
+perlahan, lalu kabur melesat 
+keluar kelas meninggalkan 
+jejak asap kartun. 
+VO: "SALAH 
+KELASSS!! 
+ALAMAAK!!" 
+Suara komedi 
+'Crickets', efek 
+melesat cepat 
+'Zip-Whoosh!' 
+
+Cerita diatas buat alur cerita yg lain yg baru stickman pergi kuliah di kampus upi yptk dan terdapat 6 scane juga ceritanya sama telat bangun, terlambat masuk kelas, salah masuk kelas .  telat bangun → lari ke kampus → salah masuk kelas → malu → kabur. Disusun dalam bentuk tabel rapi seperti contoh.</p>
+    <div class="box">
+      <img src="beranda.png" alt="Landscape" class="img-landscape img-zoom"
+           data-src="beranda.png">
+      <p class="caption"><strong>Gambar Landscape Utama</strong> — Hasil prompt: "pemandangan sinematik, cahaya golden hour, resolusi tinggi, detail tajam"</p>
+    </div>
+
+    <div class="box">
+      <h3 class="sub-title">Galeri </h3>
+      <div class="grid-3">
+        <div class="img-item">
+          <img src="foto1.jpg" class="img-small img-zoom" data-src="foto1.jpg" alt="img1">
+          <div class="img-text">
+            <h4>Scene 1</h4>
+            
+          </div>
+        </div>
+        <div class="img-item">
+          <img src="foto2.jpg" class="img-small img-zoom" data-src="foto2.jpg" alt="img2">
+          <div class="img-text">
+            <h4>Scene 2</h4>
+            
+          </div>
+        </div>
+        <div class="img-item">
+          <img src="foto3.jpg" class="img-small img-zoom" data-src="foto3.jpg" alt="img3">
+          <div class="img-text">
+            <h4>Scene 3</h4>
+            
+          </div>
+        </div>
+      </div>
+      <div class="grid-3" style="margin-top:22px;">
+        <div class="img-item">
+          <img src="foto4.jpg" class="img-small img-zoom" data-src="foto4.jpg" alt="img4">
+          <div class="img-text">
+            <h4>Scene 4</h4>
+            
+          </div>
+        </div>
+        <div class="img-item">
+          <img src="foto5.jpg" class="img-small img-zoom" data-src="foto5.jpg" alt="img5">
+          <div class="img-text">
+            <h4>Scene 5</h4>
+            
+          </div>
+        </div>
+        <div class="img-item">
+          <img src="foto6.jpg" class="img-small img-zoom" data-src="foto6.jpg" alt="img6">
+          <div class="img-text">
+            <h4>Scene 6</h4>
+            
+          </div>
+        </div>
+      </div>
+      <p class="caption" style="margin-top:20px;">Klik setiap gambar untuk melihat versi <strong>zoom layar penuh</strong></p>
+    </div>
+
+    <hr class="divider">
+
+    <!-- IMG TO VIDEO -->
+    <h2 class="section-title">Image to Video</h2>
+    <p class="section-desc">Enam video hasil konversi dari gambar. Klik gambar untuk memutar di tempat, atau klik ikon ▶ untuk menonton layar penuh.</p>
+    <div class="box">
+      <div class="video-list">
+
+        <div class="video-item">
+          <div class="video-thumb" data-video="video1.mp4">
+            <img src="foto1.jpg" alt="Video 1">
+            <div class="play-icon" title="Tonton layar penuh">▶</div>
+            <div class="video-label">Video 1</div>
+            <video controls preload="metadata" playsinline>
+              <source src="video1.mp4" type="video/mp4">
+            </video>
+          </div>
+          <div class="video-caption">
+            <h4>Video 1  </h4>
+            <p>Erut tidur lelap sampai lupa ada kuis Pak Robi .</p>
+          </div>
+        </div>
+
+        <div class="video-item">
+          <div class="video-thumb" data-video="video2.mp4">
+            <img src="foto2.jpg" alt="Video 2">
+            <div class="play-icon" title="Tonton layar penuh">▶</div>
+            <div class="video-label">Video 2</div>
+            <video controls preload="metadata" playsinline>
+              <source src="video2.mp4" type="video/mp4">
+            </video>
+          </div>
+          <div class="video-caption">
+            <h4>Video 2 </h4>
+            <p>Erut berlari kekampus sambil membawa ransel terburu buru masuk kelas.</p>
+          </div>
+        </div>
+
+        <div class="video-item">
+          <div class="video-thumb" data-video="video3.mp4">
+            <img src="foto3.jpg" alt="Video 3">
+            <div class="play-icon" title="Tonton layar penuh">▶</div>
+            <div class="video-label">Video 3</div>
+            <video controls preload="metadata" playsinline>
+              <source src="video3.mp4" type="video/mp4">
+            </video>
+          </div>
+          <div class="video-caption">
+            <h4>Video 3 </h4>
+            <p>Erut berlari hampir tergelincir sampai didepan pintu langsung masuk tanpa izin.</p>
+          </div>
+        </div>
+
+        <div class="video-item">
+          <div class="video-thumb" data-video="video4.mp4">
+            <img src="foto4.jpg" alt="Video 4">
+            <div class="play-icon" title="Tonton layar penuh">▶</div>
+            <div class="video-label">Video 4</div>
+            <video controls preload="metadata" playsinline>
+              <source src="video4.mp4" type="video/mp4">
+            </video>
+          </div>
+          <div class="video-caption">
+            <h4>Video 4</h4>
+            <p>Pandangan seluruh didalam kelas ke erut ,Erut berdiri berkata "Maaf pak agak telat saya siap megikuti kuis".</p>
+          </div>
+        </div>
+
+        <div class="video-item">
+          <div class="video-thumb" data-video="video5.mp4">
+            <img src="foto5.jpg" alt="Video 5">
+            <div class="play-icon" title="Tonton layar penuh">▶</div>
+            <div class="video-label">Video 5</div>
+            <video controls preload="metadata" playsinline>
+              <source src="video5.mp4" type="video/mp4">
+            </video>
+          </div>
+          <div class="video-caption">
+            <h4>Video 5 </h4>
+            <p>mahasiswa dikelas itu binggung dan dosen berkata Erut ini bukan kelas kamu, seketika mahasiswa tertawa menertawakin Erut.</p>
+          </div>
+        </div>
+
+        <div class="video-item">
+          <div class="video-thumb" data-video="video6.mp4">
+            <img src="foto6.jpg" alt="Video 6">
+            <div class="play-icon" title="Tonton layar penuh">▶</div>
+            <div class="video-label">Video 6</div>
+            <video controls preload="metadata" playsinline>
+              <source src="video6.mp4" type="video/mp4">
+            </video>
+          </div>
+          <div class="video-caption">
+            <h4>Video 6 </h4>
+            <p>Lalu erut berbalik pelan dengan rasa malu dan amarah salah masuk kelas .</p>
+          </div>
+        </div>
+
+      </div>
+      <p class="caption" style="margin-top:20px;">Klik gambar untuk memutar di tempat, atau klik <strong>ikon ▶</strong> untuk menonton layar penuh</p>
+    </div>
+
+    <hr class="divider">
+
+    <!-- PEMBUATAN TUGAS -->
+    <h2 class="section-title">Pembuatan Tugas</h2>
+    <p class="section-desc">Identitas pembuat dan penanggung jawab tugas animasi multimedia.</p>
+    <div class="box">
+      <div class="pembuat-card">
+        <img src="tentang.jpg" alt="Foto Pembuat" class="pembuat-foto img-zoom" data-src="tentang.jpg">
+        <h3 class="pembuat-nama">ERUTD M THALIF</h3>
+        <p class="pembuat-jabatan"></p>
+        <p class="pembuat-desc">
+          Tugas animasi multimedia ini dibuat dan dikerjakan secara mandiri oleh satu orang, 
+          mulai dari tahap konsep, perancangan storyboard, produksi animasi, 
+          hingga penyusunan dokumentasi prompt AI untuk menghasilkan karya visual yang utuh.
+        </p>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- ===== HASIL 1 ===== -->
+  <section class="section" id="hasil1">
+    <h2 class="section-title">Hasil 1 · Video Akhir</h2>
+    <p class="section-desc">Video final hasil produksi animasi multimedia dalam format MP4. Klik ikon ▶ untuk menonton layar penuh.</p>
+    <div class="box">
+      <div class="video-thumb" data-video="hasil.mp4">
+        <img src="foto1.jpg" alt="Thumbnail Video Akhir">
+        <div class="play-icon" title="Tonton layar penuh">▶</div>
+        <div class="video-label">Video Akhir · MP4</div>
+        <video controls preload="metadata" playsinline>
+          <source src="hasil.mp4" type="video/mp4">
+        </video>
+      </div>
+      <p class="caption">Klik gambar untuk memutar di tempat, atau klik <strong>ikon ▶</strong> untuk menonton layar penuh</p>
+    </div>
+  </section>
+
+  <!-- ===== TAXY TO PROMT ===== -->
+  <section class="section" id="taxy">
+    <h2 class="section-title">Text to Prompt</h2>
+    <p class="section-desc">Kumpulan paragraf penjelasan mengenai proses mengubah teks menjadi prompt untuk AI generatif.</p>
+    <div class="box">
+      <div class="paragraf">
+        <h3>Scene 1 — Pengantar</h3>
+        <p>Text to prompt adalah proses mengubah ide atau deskripsi teks menjadi perintah terstruktur yang dapat dipahami oleh AI generatif. Dalam animasi multimedia, teknik ini menjadi jembatan antara imajinasi kreator dan hasil visual yang diinginkan.</p>
+      </div>
+      <div class="paragraf">
+        <h3>Scene 2 — Struktur Prompt</h3>
+        <p>Prompt yang baik terdiri dari subjek, gaya visual, pencahayaan, komposisi, dan detail teknis. Semakin spesifik prompt yang ditulis, semakin akurat pula hasil yang dihasilkan oleh model AI seperti Stable Diffusion atau Midjourney.</p>
+      </div>
+      <div class="paragraf">
+        <h3>Scene 3 — Gaya Visual</h3>
+        <p>Gaya visual dalam prompt dapat mencakup realistik, kartun, anime, sinematik, cyberpunk, hingga watercolor. Menentukan gaya di awal membantu AI memahami arah estetika yang diinginkan secara konsisten.</p>
+      </div>
+      <div class="paragraf">
+        <h3>Scene 4 — Pencahayaan & Mood</h3>
+        <p>Elemen pencahayaan seperti golden hour, neon light, soft shadow, atau dramatic lighting mampu membangun mood tertentu. Mood yang kuat akan membuat karya animasi terasa lebih hidup dan emosional.</p>
+      </div>
+      <div class="paragraf">
+        <h3>Scene 5 — Komposisi & Kamera</h3>
+        <p>Sudut kamera seperti close-up, wide shot, bird eye view, atau low angle memberi pengaruh besar pada cerita visual. Komposisi rule of thirds dan depth of field juga sering dipakai untuk memperkuat fokus.</p>
+      </div>
+      <div class="paragraf">
+        <h3>Scene 6 — Kesimpulan</h3>
+        <p>Dengan menguasai text to prompt, seorang animator dapat mempercepat proses produksi, mengeksplorasi banyak variasi ide, dan menghasilkan karya multimedia yang lebih kreatif serta efisien.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== PROMT TO IMAGE ===== -->
+  <section class="section" id="promtimg">
+    <h2 class="section-title">Prompt to Image</h2>
+    <p class="section-desc">Hasil konversi prompt teks menjadi gambar. Menampilkan satu gambar landscape dan enam gambar thumbnail dalam grid.</p>
+
+    <div class="box">
+      <img src="beranda.png" alt="Landscape" class="img-landscape img-zoom"
+           data-src="beranda.png">
+      <p class="caption"><strong>Gambar Landscape Utama</strong> — Hasil prompt: "pemandangan sinematik, cahaya golden hour, resolusi tinggi, detail tajam"</p>
+    </div>
+
+    <div class="box">
+      <h3 class="sub-title">Galeri Thumbnail</h3>
+      <div class="grid-3">
+        <div class="img-item">
+          <img src="foto2.jpg" class="img-small img-zoom" data-src="foto2.jpg" alt="img1">
+          <div class="img-text">
+            <h4>Scene 1</h4>
+            <p></p>
+          </div>
+        </div>
+        <div class="img-item">
+          <img src="foto3.jpg" class="img-small img-zoom" data-src="foto3.jpg" alt="img2">
+          <div class="img-text">
+            <h4>Scene 2</h4>
+            <p></p>
+          </div>
+        </div>
+        <div class="img-item">
+          <img src="foto4.jpg" class="img-small img-zoom" data-src="foto4.jpg" alt="img3">
+          <div class="img-text">
+            <h4>Scene 3</h4>
+            <p></p>
+          </div>
+        </div>
+      </div>
+      <div class="grid-3" style="margin-top:22px;">
+        <div class="img-item">
+          <img src="foto5.jpg" class="img-small img-zoom" data-src="foto5.jpg" alt="img4">
+          <div class="img-text">
+            <h4>Scene 4</h4>
+            <p></p>
+          </div>
+        </div>
+        <div class="img-item">
+          <img src="foto6.jpg" class="img-small img-zoom" data-src="foto6.jpg" alt="img5">
+          <div class="img-text">
+            <h4>Scene 5</h4>
+            <p></p>
+          </div>
+        </div>
+        <div class="img-item">
+          <img src="foto6.jpg" class="img-small img-zoom" data-src="foto6.jpg" alt="img6">
+          <div class="img-text">
+            <h4>Scene 6</h4>
+            <p></p>
+          </div>
+        </div>
+      </div>
+      <p class="caption" style="margin-top:20px;">Klik setiap gambar untuk melihat versi <strong>zoom layar penuh</strong></p>
+    </div>
+  </section>
+
+  <!-- ===== IMG TO VIDEO ===== -->
+  <section class="section" id="imgvideo">
+    <h2 class="section-title">Image to Video</h2>
+    <p class="section-desc">Enam video hasil konversi dari gambar. Klik gambar untuk memutar di tempat, atau klik ikon ▶ untuk menonton layar penuh.</p>
+    <div class="box">
+      <div class="video-list">
+
+        <div class="video-item">
+          <div class="video-thumb" data-video="video1.mp4">
+            <img src="foto1.jpg" alt="Video 1">
+            <div class="play-icon" title="Tonton layar penuh">▶</div>
+            <div class="video-label">Video 1</div>
+            <video controls preload="metadata" playsinline>
+              <source src="video1.mp4" type="video/mp4">
+            </video>
+          </div>
+          <div class="video-caption">
+            <h4>Video 1 </h4>
+            <p></p>
+          </div>
+        </div>
+
+        <div class="video-item">
+          <div class="video-thumb" data-video="video2.mp4">
+            <img src="foto2.jpg" alt="Video 2">
+            <div class="play-icon" title="Tonton layar penuh">▶</div>
+            <div class="video-label">Video 2</div>
+            <video controls preload="metadata" playsinline>
+              <source src="video2.mp4" type="video/mp4">
+            </video>
+          </div>
+          <div class="video-caption">
+            <h4>Video 2 </h4>
+            <p></p>
+          </div>
+        </div>
+
+        <div class="video-item">
+          <div class="video-thumb" data-video="video3.mp4">
+            <img src="foto3.jpg" alt="Video 3">
+            <div class="play-icon" title="Tonton layar penuh">▶</div>
+            <div class="video-label">Video 3</div>
+            <video controls preload="metadata" playsinline>
+              <source src="video3.mp4" type="video/mp4">
+            </video>
+          </div>
+          <div class="video-caption">
+            <h4>Video 3  </h4>
+            <p></p>
+          </div>
+        </div>
+
+        <div class="video-item">
+          <div class="video-thumb" data-video="video4.mp4">
+            <img src="foto4.jpg" alt="Video 4">
+            <div class="play-icon" title="Tonton layar penuh">▶</div>
+            <div class="video-label">Video 4</div>
+            <video controls preload="metadata" playsinline>
+              <source src="video4.mp4" type="video/mp4">
+            </video>
+          </div>
+          <div class="video-caption">
+            <h4>Video 4 </h4>
+            <p></p>
+          </div>
+        </div>
+
+        <div class="video-item">
+          <div class="video-thumb" data-video="video5.mp4">
+            <img src="foto5.jpg" alt="Video 5">
+            <div class="play-icon" title="Tonton layar penuh">▶</div>
+            <div class="video-label">Video 5</div>
+            <video controls preload="metadata" playsinline>
+              <source src="video5.mp4" type="video/mp4">
+            </video>
+          </div>
+          <div class="video-caption">
+            <h4>Video 5  </h4>
+            <p></p>
+          </div>
+        </div>
+
+        <div class="video-item">
+          <div class="video-thumb" data-video="video6.mp4">
+            <img src="foto6.jpg" alt="Video 6">
+            <div class="play-icon" title="Tonton layar penuh">▶</div>
+            <div class="video-label">Video 6</div>
+            <video controls preload="metadata" playsinline>
+              <source src="video6.mp4" type="video/mp4">
+            </video>
+          </div>
+          <div class="video-caption">
+            <h4>Video 6</h4>
+            <p></p>
+          </div>
+        </div>
+
+      </div>
+      <p class="caption" style="margin-top:20px;">Klik gambar untuk memutar di tempat, atau klik <strong>ikon ▶</strong> untuk menonton layar penuh</p>
+    </div>
+  </section>
+
+  <!-- ===== PEMBUATAN TUGAS ===== -->
+  <section class="section" id="pembuatan">
+    <h2 class="section-title">Pembuatan Tugas</h2>
+    <p class="section-desc">Identitas pembuat dan penanggung jawab tugas animasi multimedia.</p>
+    <div class="box">
+      <div class="pembuat-card">
+        <img src="tentang.jpg" alt="Foto Pembuat" class="pembuat-foto img-zoom" data-src="tentang.jpg">
+        <h3 class="pembuat-nama">ERUTD M THALIF</h3>
+        <p class="pembuat-jabatan"></p>
+        <p class="pembuat-desc">
+          Tugas animasi multimedia ini dibuat dan dikerjakan secara mandiri oleh satu orang, 
+          mulai dari tahap konsep, perancangan storyboard, produksi animasi, 
+          hingga penyusunan dokumentasi prompt AI untuk menghasilkan karya visual yang utuh.
+        </p>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer>© 2026 Tugas Animasi Multimedia — All </footer>
+
+<!-- ===== LIGHTBOX IMAGE ===== -->
+<div class="lightbox" id="lightbox">
+  <div class="close-btn" id="closeLightbox">✕</div>
+  <img src="" alt="Zoom" id="lightboxImg">
+</div>
+
+<!-- ===== LIGHTBOX VIDEO (LAYAR PENUH) ===== -->
+<div class="lightbox-video" id="lightboxVideo">
+  <div class="close-btn" id="closeLightboxVideo">✕</div>
+  <video id="lightboxVideoEl" controls autoplay playsinline></video>
+</div>
+
+<script>
+/* ===== MENU HAMBURGER ===== */
+const hamburger = document.getElementById('hamburger');
+const navMenu = document.getElementById('navMenu');
+const overlay = document.getElementById('overlay');
+
+hamburger.addEventListener('click', () => {
+  hamburger.classList.toggle('active');
+  navMenu.classList.toggle('open');
+  overlay.classList.toggle('show');
+});
+
+overlay.addEventListener('click', closeMenu);
+function closeMenu() {
+  hamburger.classList.remove('active');
+  navMenu.classList.remove('open');
+  overlay.classList.remove('show');
+}
+
+/* ===== NAVIGASI SECTION ===== */
+document.querySelectorAll('.nav-menu a').forEach(link => {
+  link.addEventListener('click', e => {
+    e.preventDefault();
+    const target = link.dataset.target;
+
+    document.querySelectorAll('.nav-menu a').forEach(a => a.classList.remove('active'));
+    link.classList.add('active');
+
+    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+    document.getElementById(target).classList.add('active');
+
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    closeMenu();
+  });
+});
+
+/* ===== LIGHTBOX IMAGE (ZOOM) ===== */
+const lightbox = document.getElementById('lightbox');
+const lightboxImg = document.getElementById('lightboxImg');
+const closeLightbox = document.getElementById('closeLightbox');
+
+document.querySelectorAll('.img-zoom').forEach(img => {
+  img.addEventListener('click', () => {
+    lightboxImg.src = img.dataset.src || img.src;
+    lightbox.classList.add('show');
+    document.body.style.overflow = 'hidden';
+  });
+});
+
+function hideLightbox() {
+  lightbox.classList.remove('show');
+  document.body.style.overflow = '';
+  setTimeout(() => { lightboxImg.src = ''; }, 400);
+}
+closeLightbox.addEventListener('click', hideLightbox);
+lightbox.addEventListener('click', e => { if (e.target === lightbox) hideLightbox(); });
+
+/* ===== LIGHTBOX VIDEO (LAYAR PENUH + AUTOPLAY + SUARA) ===== */
+const lightboxVideo = document.getElementById('lightboxVideo');
+const lightboxVideoEl = document.getElementById('lightboxVideoEl');
+const closeLightboxVideo = document.getElementById('closeLightboxVideo');
+
+function bukaVideoLayarPenuh(src) {
+  if (!src) return;
+  lightboxVideoEl.src = src;
+  lightboxVideo.classList.add('show');
+  document.body.style.overflow = 'hidden';
+  lightboxVideoEl.muted = false;
+  lightboxVideoEl.volume = 1;
+  lightboxVideoEl.load();
+  const p = lightboxVideoEl.play();
+  if (p !== undefined) p.catch(err => console.log('Autoplay diblokir:', err));
+}
+
+function hideVideoLightbox() {
+  lightboxVideo.classList.remove('show');
+  lightboxVideoEl.pause();
+  lightboxVideoEl.currentTime = 0;
+  lightboxVideoEl.removeAttribute('src');
+  lightboxVideoEl.load();
+  document.body.style.overflow = '';
+}
+closeLightboxVideo.addEventListener('click', hideVideoLightbox);
+lightboxVideo.addEventListener('click', e => { if (e.target === lightboxVideo) hideVideoLightbox(); });
+
+/* ===== VIDEO-THUMB: 
+   - Klik GAMBAR → video muncul di tempat (inline)
+   - Klik IKON ▶ → video muncul di LIGHTBOX layar penuh ===== */
+document.querySelectorAll('.video-thumb').forEach(box => {
+  const img = box.querySelector('img');
+  const video = box.querySelector('video');
+  const playIcon = box.querySelector('.play-icon');
+  if (!img || !video) return;
+
+  // --- Klik GAMBAR: mainkan video di tempat (inline) ---
+  img.addEventListener('click', (e) => {
+    e.stopPropagation();
+
+    document.querySelectorAll('.video-thumb').forEach(other => {
+      if (other !== box) {
+        other.classList.remove('active');
+        const v = other.querySelector('video');
+        if (v) { v.pause(); v.currentTime = 0; }
+      }
+    });
+
+    box.classList.add('active');
+
+    const src = box.dataset.video;
+    if (src) {
+      const sourceEl = video.querySelector('source');
+      if (sourceEl) sourceEl.src = src;
+      video.setAttribute('src', src);
+    }
+    video.muted = false;
+    video.volume = 1;
+    video.load();
+    const p = video.play();
+    if (p !== undefined) p.catch(err => console.log('Play diblokir:', err));
+  });
+
+  // --- Klik IKON ▶: buka LIGHTBOX layar penuh ---
+  if (playIcon) {
+    playIcon.addEventListener('click', (e) => {
+      e.stopPropagation();          // jangan trigger klik gambar
+      e.preventDefault();
+      const src = box.dataset.video;
+      bukaVideoLayarPenuh(src);
+    });
+  }
+
+  // Jika video inline selesai → kembali ke thumbnail
+  video.addEventListener('ended', () => {
+    box.classList.remove('active');
+  });
+});
+
+/* ===== MEDIA SWITCH (KOMPATIBILITAS) ===== */
+document.querySelectorAll('.media-switch-trigger').forEach(box => {
+  const img = box.querySelector('img');
+  const video = box.querySelector('video');
+  if (!img || !video) return;
+
+  img.addEventListener('click', () => {
+    document.querySelectorAll('.media-switch-trigger').forEach(other => {
+      if (other !== box) {
+        other.classList.remove('active');
+        const v = other.querySelector('video');
+        if (v) { v.pause(); v.currentTime = 0; }
+      }
+    });
+    box.classList.add('active');
+    const src = box.dataset.video;
+    if (src) {
+      const sourceEl = video.querySelector('source');
+      if (sourceEl) sourceEl.src = src;
+      video.setAttribute('src', src);
+    }
+    video.muted = false;
+    video.volume = 1;
+    video.load();
+    const p = video.play();
+    if (p !== undefined) p.catch(err => console.log('Play diblokir:', err));
+  });
+
+  video.addEventListener('ended', () => {
+    box.classList.remove('active');
+  });
+});
+
+/* ===== ESC UNTUK MENUTUP ===== */
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') {
+    hideLightbox();
+    hideVideoLightbox();
+    closeMenu();
+  }
+});
+</script>
+</body>
+</html>
